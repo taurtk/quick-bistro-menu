@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
 import { MenuItem as MenuItemType } from '@/data/menuData';
-import { Heart, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useCart } from '@/contexts/CartContext';
 
 interface MenuItemProps {
   item: MenuItemType;
@@ -10,36 +11,35 @@ interface MenuItemProps {
 }
 
 const MenuItem: React.FC<MenuItemProps> = ({ item, onClick }) => {
-  const [quantity, setQuantity] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
     
-    // Check if item already exists in cart
-    const itemIndex = existingCart.findIndex((cartItem: any) => cartItem.id === item.id);
-    
-    if (itemIndex > -1) {
-      // Update quantity if item exists
-      existingCart[itemIndex].quantity = quantity + 1;
-    } else {
-      // Add new item to cart
-      existingCart.push({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        image: item.image,
-        quantity: 1
-      });
-    }
-    
-    localStorage.setItem('cart', JSON.stringify(existingCart));
-    setQuantity(quantity + 1);
+    // Use the cart context to add the item
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      quantity: 1
+    });
     
     toast({
       title: "Added to cart",
       description: `${item.name} added to your order`,
+    });
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFavorite(!isFavorite);
+    
+    toast({
+      title: isFavorite ? "Removed from favorites" : "Added to favorites",
+      description: `${item.name} ${isFavorite ? "removed from" : "added to"} your favorites`,
     });
   };
 
@@ -64,10 +64,10 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onClick }) => {
           <span className="item-price">${item.price.toFixed(2)}</span>
           <div className="flex items-center gap-2">
             <button 
-              className="text-muted-foreground hover:text-red-500 transition-colors"
-              onClick={(e) => { e.stopPropagation(); }}
+              className={`text-muted-foreground ${isFavorite ? 'text-red-500' : 'hover:text-red-500'} transition-colors`}
+              onClick={handleToggleFavorite}
             >
-              <Heart size={18} />
+              <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
             </button>
             <button 
               className="bg-bistro-primary text-white p-1 rounded-full hover:bg-bistro-primary/90 transition-colors"
