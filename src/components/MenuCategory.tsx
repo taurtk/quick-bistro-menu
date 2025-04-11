@@ -20,8 +20,10 @@ const MenuCategoryTabs: React.FC<MenuCategoryTabsProps> = ({
           <button
             key={category.id}
             onClick={() => onSelectCategory(category.id)}
-            className={`category-badge whitespace-nowrap ${
-              activeCategory === category.id ? 'bg-bistro-secondary text-white' : ''
+            className={`category-badge whitespace-nowrap transition-all duration-200 ${
+              activeCategory === category.id 
+                ? 'bg-bistro-secondary text-white scale-105 shadow-md' 
+                : 'hover:bg-bistro-accent/80'
             }`}
           >
             <span className="mr-1">{category.emoji}</span> {category.name}
